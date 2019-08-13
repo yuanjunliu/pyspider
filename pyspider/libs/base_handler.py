@@ -38,11 +38,13 @@ def not_send_status(func):
 
     It's used by callbacks like on_message, on_result etc...
     """
+
     @functools.wraps(func)
     def wrapper(self, response, task):
         self._extinfo['not_send_status'] = True
         function = func.__get__(self, self.__class__)
         return self._run_func(function, response, task)
+
     return wrapper
 
 
@@ -58,6 +60,7 @@ def config(_config=None, **kwargs):
     def wrapper(func):
         func._config = _config
         return func
+
     return wrapper
 
 
@@ -69,6 +72,7 @@ def every(minutes=NOTSET, seconds=NOTSET):
     """
     method will been called every minutes or seconds
     """
+
     def wrapper(func):
         # mark the function with variable 'is_cronjob=True', the function would be
         # collected into the list Handler._cron_jobs by meta class
@@ -218,10 +222,11 @@ class BaseHandler(object):
         return ProcessorResult(result, follows, messages, logs, exception, extinfo, save)
 
     schedule_fields = ('priority', 'retries', 'exetime', 'age', 'itag', 'force_update', 'auto_recrawl', 'cancel')
-    fetch_fields = ('method', 'headers', 'user_agent', 'data', 'connect_timeout', 'timeout', 'allow_redirects', 'cookies',
-                    'proxy', 'etag', 'last_modifed', 'last_modified', 'save', 'js_run_at', 'js_script',
-                    'js_viewport_width', 'js_viewport_height', 'load_images', 'fetch_type', 'use_gzip', 'validate_cert',
-                    'max_redirects', 'robots_txt')
+    fetch_fields = (
+    'method', 'headers', 'user_agent', 'data', 'connect_timeout', 'timeout', 'allow_redirects', 'cookies',
+    'proxy', 'etag', 'last_modifed', 'last_modified', 'save', 'js_run_at', 'js_script',
+    'js_viewport_width', 'js_viewport_height', 'load_images', 'fetch_type', 'use_gzip', 'validate_cert',
+    'max_redirects', 'robots_txt')
     process_fields = ('callback', 'process_time_limit')
 
     @staticmethod
@@ -385,6 +390,9 @@ class BaseHandler(object):
             url = curl_kwargs.pop('urls')
             for k, v in iteritems(curl_kwargs):
                 kwargs.setdefault(k, v)
+
+        # 默认设置validate_cert=False
+        kwargs.setdefault('validate_cert', False)
 
         if isinstance(url, six.string_types):
             return self._crawl(url, **kwargs)

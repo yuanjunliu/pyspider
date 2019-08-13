@@ -7,6 +7,7 @@
 
 import time
 import redis
+import socket
 import umsgpack
 from six.moves import queue as BaseQueue
 
@@ -31,17 +32,41 @@ class RedisQueue(object):
                     for better performance.
         """
         self.name = name
-        if(cluster_nodes is not None):
-            from rediscluster import StrictRedisCluster
-            self.redis = StrictRedisCluster(startup_nodes=cluster_nodes)
-        else:
-            self.redis = redis.StrictRedis(host=host, port=port, db=db, password=password)
+        self.host = host
+        self.port = port
+        self.db = db
+        self.password = password
+        self.cluster_nodes = cluster_nodes
+        # if(cluster_nodes is not None):
+        #     from rediscluster import StrictRedisCluster
+        #     self.redis = StrictRedisCluster(startup_nodes=cluster_nodes)
+        # else:
+        #     self.redis = redis.StrictRedis(host=host, port=port, db=db, password=password)
+        self._connect()
         self.maxsize = maxsize
         self.lazy_limit = lazy_limit
         self.last_qsize = 0
 
+    def _connect(self):
+        if (self.cluster_nodes is not None):
+            from rediscluster import StrictRedisCluster
+            self.redis = StrictRedisCluster(startup_nodes=self.cluster_nodes)
+        else:
+            self.redis = redis.StrictRedis(host=self.host, port=self.port, db=self.db, password=self.password)
+
+    def redis_command(self, op, *args, **kwargs):
+        # 连接失败时，重连
+        while 1:
+            try:
+                fun = getattr(self.redis, op)
+                return fun(*args, **kwargs)
+            except (redis.exceptions.ConnectionError, redis.exceptions.TimeoutError, socket.error):
+                time.sleep(1)
+                self._connect()
+
     def qsize(self):
-        self.last_qsize = self.redis.llen(self.name)
+        # self.last_qsize = self.redis.llen(self.name)
+        self.last_qsize = self.redis_command('llen', self.name)
         return self.last_qsize
 
     def empty(self):
@@ -61,7 +86,8 @@ class RedisQueue(object):
             pass
         elif self.full():
             raise self.Full
-        self.last_qsize = self.redis.rpush(self.name, umsgpack.packb(obj))
+        # self.last_qsize = self.redis.rpush(self.name, umsgpack.packb(obj))
+        self.last_qsize = self.redis_command('rpush', self.name, umsgpack.packb(obj))
         return True
 
     def put(self, obj, block=True, timeout=None):
@@ -83,7 +109,8 @@ class RedisQueue(object):
                     time.sleep(self.max_timeout)
 
     def get_nowait(self):
-        ret = self.redis.lpop(self.name)
+        # ret = self.redis.lpop(self.name)
+        ret = self.redis_command('lpop', self.name)
         if ret is None:
             raise self.Empty
         return umsgpack.unpackb(ret)
@@ -105,5 +132,6 @@ class RedisQueue(object):
                         raise
                 else:
                     time.sleep(self.max_timeout)
+
 
 Queue = RedisQueue

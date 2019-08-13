@@ -1,0 +1,25 @@
+{
+  "taskdb": "mysql+taskdb://cdb_outerroot:mysql@tx-001@cd-cdb-afrtbx6i.sql.tencentcdb.com:63991/taskdb",
+  "projectdb": "mysql+projectdb://cdb_outerroot:mysql@tx-001@cd-cdb-afrtbx6i.sql.tencentcdb.com:63991/projectdb",
+  "resultdb": "mongodb+resultdb://mongodbcrawler:Shantianci56@140.143.94.171:27017/crawler",
+  "message_queue": "redis://:2qr4cjsy7zzzmm@119.27.185.96:6379/1",
+  "webui": {
+    "username": "",
+    "password": "",
+    "need-auth": false,
+    "host":"10.211.55.24",
+    "port":"5000",
+    "scheduler-rpc":"http:// 10.211.55.22:5002",
+    "fetcher-rpc":"http://10.211.55.23:5001"
+  },
+  "fetcher": {
+    "xmlrpc":true,
+    "xmlrpc-host": "0.0.0.0",
+    "xmlrpc-port": "5001"
+  },
+  "scheduler": {
+    "xmlrpc":true,
+    "xmlrpc-host": "0.0.0.0",
+    "xmlrpc-port": "5002"
+  }
+}

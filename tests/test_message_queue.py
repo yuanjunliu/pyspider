@@ -197,25 +197,25 @@ class TestRedisQueue(TestMessageQueue, unittest.TestCase):
         from pyspider.message_queue import connect_message_queue
         from pyspider.message_queue import redis_queue
         with utils.timeout(3):
-            self.q1 = redis_queue.RedisQueue('test_queue', maxsize=5, lazy_limit=False)
-            self.q2 = redis_queue.RedisQueue('test_queue', maxsize=5, lazy_limit=False)
+            self.q1 = redis_queue.RedisQueue('test_queue', host='119.27.185.96', password='2qr4cjsy7zzzmm', maxsize=5, lazy_limit=False)
+            self.q2 = redis_queue.RedisQueue('test_queue', host='119.27.185.96', password='2qr4cjsy7zzzmm', maxsize=5, lazy_limit=False)
             self.q3 = connect_message_queue('test_queue_for_threading_test',
-                                            'redis://localhost:6379/')
+                                            'redis://:2qr4cjsy7zzzmm@119.27.185.96:6379/1')
             while not self.q1.empty():
-                self.q1.get()
+                print("get from q1: %s" % self.q1.get())
             while not self.q2.empty():
-                self.q2.get()
+                print("get from q2: %s" % self.q2.get())
             while not self.q3.empty():
-                self.q3.get()
+                print("get from q3: %s" % self.q3.get())
 
     @classmethod
     def tearDownClass(self):
         while not self.q1.empty():
-            self.q1.get()
+            print("get from q1: %s" % self.q1.get())
         while not self.q2.empty():
-            self.q2.get()
+            print("get from q2: %s" % self.q2.get())
         while not self.q3.empty():
-            self.q3.get()
+            print("get from q3: %s" % self.q3.get())
 
 class TestKombuQueue(TestMessageQueue, unittest.TestCase):
     kombu_url = 'kombu+memory://'

@@ -824,7 +824,7 @@ def send_message(ctx, scheduler_rpc, project, message):
 
 
 def main():
-    cli()
+    cli(ignore_unknown_options=True)
 
 if __name__ == '__main__':
     main()
